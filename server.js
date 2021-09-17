@@ -30,8 +30,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(User.createStrategy())
-passport.serializeUser(User.serializeUser())
-passport.deserializeUser(User.deserializeUser())
+
 passport.use(
     new GoogleStrategy(
         {
@@ -56,6 +55,9 @@ passport.use(
         }
     )
 );
+passport.serializeUser(User.serializeUser())
+passport.deserializeUser(User.deserializeUser())
+
 app.get(
     "/auth/google",
     passport.authenticate("google", { scope: ["profile", "email"] })
@@ -75,7 +77,7 @@ app.get('/auth/google/callback',
 
 app.get('/', AuthMiddleware.isAuth, async (req, res) => {
     try {
-        res.sendFile(path.resolve(__dirname, "/custlogin.html"));
+        res.sendFile(path.resolve(__dirname, "/success.html"));
       } catch (err) {}
 })
 app.get('/payment', (req, res) => {
@@ -145,6 +147,16 @@ app.post('/register', (req, res) => {
         res.redirect('/')
     })
 
+    user.register({ email }, password, (err, newUser) => {
+        if (err) {
+          res.send(err);
+        } else {
+          passport.authenticate("local")(req, res, () => {
+            res.redirect("/custlogin");
+          });
+        }
+      });
+
     const data = {
         members: [{
             email_address: email,
@@ -179,73 +191,55 @@ app.post('/register', (req, res) => {
 })
 
 app.post('/', (req, res) => {
-    const email = req.body.inputEmail
-    var password = req.body.inputPassword
-
-
-    User.find({ email: email }, function (erro, result) {
-        for (var i = 0; i < result.length; i++) {
-
-
-            if (result[i] == null) {
-                res.flash("no users!")
-                console.log(erro)
-            } else {
-                var temp = result[i].password
-                console.log(temp)
-                const pwd = bcrypt.compareSync(password, temp)
-                console.log(pwd)
-                if (pwd) {
-                    console.log("Successfull!")
-                    res.sendFile(__dirname + "/success.html")
-                } else {
-                    res.flash("password erro!")
-
-                }
-
-            }
+    passport.authenticate("local", {
+        failureRedirect: "/custlogin",
+      }),
+      (req, res) => {
+        if (req.body.remeberMe) {
+          var sevenDays = 1000 * 60 * 60 * 24 * 7;
+          req.session.cookie.expires = new Date(Date.now() + sevenDays);
+          req.session.cookie.maxAge = sevenDays;
+        } else {
+          req.session.cookie.expires = false;
         }
-
-
-
-    })
+        const email = req.body.inputEmail
+        var password = req.body.inputPassword
+    
+    
+        User.find({ email: email }, function (erro, result) {
+            for (var i = 0; i < result.length; i++) {
+    
+    
+                if (result[i] == null) {
+                    res.flash("no users!")
+                    console.log(erro)
+                } else {
+                    var temp = result[i].password
+                    console.log(temp)
+                    const pwd = bcrypt.compareSync(password, temp)
+                    console.log(pwd)
+                    if (pwd) {
+                        console.log("Successfull!")
+                        res.sendFile(__dirname + "/success.html")
+                    } else {
+                        res.flash("password erro!")
+    
+                    }
+    
+                }
+            }
+    
+    
+    
+        })
+    
+      }
 
 
 })
 
 app.post('/payment', (req, res) => {
-    const email = req.body.inputEmail
-    var password = req.body.inputPassword
-
-
-    User.find({ email: email }, function (erro, result) {
-        for (var i = 0; i < result.length; i++) {
-
-
-            if (result[i] == null) {
-                res.flash("no users!")
-                console.log(erro)
-            } else {
-                var temp = result[i].password
-                console.log(temp)
-                const pwd = bcrypt.compareSync(password, temp)
-                console.log(pwd)
-                if (pwd) {
-                    console.log("Successfull!")
-                    res.sendFile(__dirname + "/success.html")
-                } else {
-                    res.flash("password erro!")
-
-                }
-
-            }
-        }
-
-
-
-    })
-
-
+  
 })
 
 app.post('/custlogin',
@@ -260,9 +254,66 @@ app.post('/custlogin',
       } else {
         req.session.cookie.expires = false;
       }
-      res.redirect("/");
+      const email = req.body.inputEmail
+      var password = req.body.inputPassword
+  
+  
+      User.find({ email: email }, function (erro, result) {
+          for (var i = 0; i < result.length; i++) {
+  
+  
+              if (result[i] == null) {
+                  res.flash("no users!")
+                  console.log(erro)
+              } else {
+                  var temp = result[i].password
+                  console.log(temp)
+                  const pwd = bcrypt.compareSync(password, temp)
+                  console.log(pwd)
+                  if (pwd) {
+                      console.log("Successfull!")
+                      res.sendFile(__dirname + "/success.html")
+                  } else {
+                      res.flash("password erro!")
+  
+                  }
+  
+              }
+          }
+  
+  
+  
+      })
+  
     }
   );
+
+  app.post("/purchase", function (req, res) {
+    const items = [{ id: 1, price: 150000 }];
+  
+    let total = 0;
+    req.body.items.forEach(function (item) {
+      const itemJson = items.find(function (i) {
+        return i.id == item.id;
+      });
+      total = total + itemJson.price * item.quantity;
+    });
+  
+    stripe.charges
+      .create({
+        amount: total,
+        source: req.body.stripeTokenId,
+        currency: "usd",
+      })
+      .then(function () {
+        console.log("Charge Successful");
+        res.json({ message: "Successfully purchased items" });
+      })
+      .catch(function () {
+        console.log("Charge Fail");
+        res.status(500).end();
+      });
+  });
 
 let port = process.env.PORT;
 if (port == null || port == "") {

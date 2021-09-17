@@ -5,16 +5,80 @@ const mongoose = require("mongoose")
 const validator = require("validator")
 const bcrypt = require('bcryptjs')
 const User = require("./models/User.js")
+const AuthMiddleware = require("./models/authMiddleware.js");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const passport = require('passport')
+const session = require('express-session')
+const e = require('express')
+
+
 mongoose.connect("mongodb+srv://admin:zhimingzhang@cluster0.bxxpf.mongodb.net/deakin?retryWrites=true&w=majority", { useNewUrlParser: true })
+
 const app = express()
 
-app.use(bodyParse.urlencoded({ extended: true }))
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(express.static("public"))
+app.use(session({
+    secret: '$$$DEakinSecret',
+    resave: false,
+    saveUninitialized: false,
+    //   cookie: {maxAge: 120000 }
+}))
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + "/custlogin.html")
+passport.use(User.createStrategy())
+passport.serializeUser(User.serializeUser())
+passport.deserializeUser(User.deserializeUser())
+passport.use(
+    new GoogleStrategy(
+        {
+            clientID:
+                "1057177087299-s3rcjj4mnjt4gv44a4asjfam95ck65qh.apps.googleusercontent.com",
+            clientSecret: "CDzotf9gLNGkOqpM41ICoftA",
+            callbackURL:
+                "https://loginzzm.herokuapp.com/auth/google/callback",
+        },
+        async function (accessToken, refreshToken, profile, done) {
+            const oldUser = await UserModel.findOne({
+                username: profile.emails[0].value,
+            });
+            if (oldUser) {
+                done(null, oldUser);
+            } else {
+                const newUser = await UserModel.create({
+                    username: profile.emails[0].value,
+                });
+                done(null, newUser);
+            }
+        }
+    )
+);
+app.get(
+    "/auth/google",
+    passport.authenticate("google", { scope: ["profile", "email"] })
+);
+app.get(
+    "/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/signin" }),
+    function (req, res) {
+        res.redirect("/");
+    }
+);
+
+app.get('/', AuthMiddleware.isAuth, async (req, res) => {
+    try {
+        res.sendFile(path.resolve(__dirname, "/custlogin.html"));
+      } catch (err) {}
+})
+app.get('/payment', (req, res) => {
+    res.sendFile(__dirname + "/payment.html")
 })
 app.get('/success', (req, res) => {
+   
     res.sendFile(__dirname + "/success.html")
+    res.clearCookie("connect.sid");
+    res.send("Cookie cleared");
 })
 app.get('/custlogin', (req, res) => {
     res.sendFile(__dirname + "/custlogin.html")
@@ -36,13 +100,13 @@ app.post('/register', (req, res) => {
     const zip = req.body.zip
     const phone = req.body.phone
 
-    
-    const saltRouns =10;
-    const salt=bcrypt.genSaltSync(saltRouns);
-    var hashpass=bcrypt.hashSync(password,salt);
-    password=hashpass;
-    var hashcpass=bcrypt.hashSync(cpassword,salt);
-    cpassword=hashcpass;
+
+    const saltRouns = 10;
+    const salt = bcrypt.genSaltSync(saltRouns);
+    var hashpass = bcrypt.hashSync(password, salt);
+    password = hashpass;
+    var hashcpass = bcrypt.hashSync(cpassword, salt);
+    cpassword = hashcpass;
     const user = new User(
         {
             lname: lname,
@@ -58,40 +122,41 @@ app.post('/register', (req, res) => {
             phone: phone
         }
     )
-    
+
 
     user.save((err) => {
-        if (err) { console.log(err) 
-        req.flash('erron','erro')
-        return res.redirect('/register.html')
+        if (err) {
+            console.log(err)
+            req.flash('erron', 'erro')
+            return res.redirect('/register.html')
         }
         else { console.log("Successfull!") }
         res.redirect('/')
     })
-    
+
     const data = {
-        members:[{
+        members: [{
             email_address: email,
-            status : "subscribed",
-            merge_fields:{
-                FNAME:fname,
-                LNAME:lname
+            status: "subscribed",
+            merge_fields: {
+                FNAME: fname,
+                LNAME: lname
             }
         }]
     }
     jsonData = JSON.stringify(data)
-    
-    const apikey="420e7e94f1749cd77058f9ba2770594e-us5"
-    const url= "https://us5.api.mailchimp.com/3.0/lists/29e7bbe168"
-    const options={
-        method:"POST",
-        auth:"azi:420e7e94f1749cd77058f9ba2770594e-us5"
+
+    const apikey = "420e7e94f1749cd77058f9ba2770594e-us5"
+    const url = "https://us5.api.mailchimp.com/3.0/lists/29e7bbe168"
+    const options = {
+        method: "POST",
+        auth: "azi:420e7e94f1749cd77058f9ba2770594e-us5"
     }
 
 
-    const request = https.request(url, options , (response)=>{
+    const request = https.request(url, options, (response) => {
 
-        response.on("data", (data)=> {
+        response.on("data", (data) => {
             console.log(JSON.parse(data))
         })
 
@@ -106,42 +171,93 @@ app.post('/', (req, res) => {
     const email = req.body.inputEmail
     var password = req.body.inputPassword
 
-    
-    User.find({email:email},function(erro,result){
-        for(var i=0;i<result.length;i++){
 
-        
-        if (result[i] == null){
-            res.flash("no users!")
-            console.log(erro)
-        }else{
-            var temp=result[i].password
-            console.log(temp)
-            const pwd=bcrypt.compareSync(password,temp)
-            console.log(pwd)
-            if(pwd){
-               console.log("Successfull!")
-               res.sendFile(__dirname + "/success.html")
-            }else{
-                res.flash("password erro!")
-     
+    User.find({ email: email }, function (erro, result) {
+        for (var i = 0; i < result.length; i++) {
+
+
+            if (result[i] == null) {
+                res.flash("no users!")
+                console.log(erro)
+            } else {
+                var temp = result[i].password
+                console.log(temp)
+                const pwd = bcrypt.compareSync(password, temp)
+                console.log(pwd)
+                if (pwd) {
+                    console.log("Successfull!")
+                    res.sendFile(__dirname + "/success.html")
+                } else {
+                    res.flash("password erro!")
+
+                }
+
             }
-            
         }
-    }
-        
-        
+
+
 
     })
- 
+
 
 })
 
+app.post('/payment', (req, res) => {
+    const email = req.body.inputEmail
+    var password = req.body.inputPassword
+
+
+    User.find({ email: email }, function (erro, result) {
+        for (var i = 0; i < result.length; i++) {
+
+
+            if (result[i] == null) {
+                res.flash("no users!")
+                console.log(erro)
+            } else {
+                var temp = result[i].password
+                console.log(temp)
+                const pwd = bcrypt.compareSync(password, temp)
+                console.log(pwd)
+                if (pwd) {
+                    console.log("Successfull!")
+                    res.sendFile(__dirname + "/success.html")
+                } else {
+                    res.flash("password erro!")
+
+                }
+
+            }
+        }
+
+
+
+    })
+
+
+})
+
+app.post('/custlogin',
+    passport.authenticate("local", {
+      failureRedirect: "/register",
+    }),
+    (req, res) => {
+      if (req.body.remeberMe) {
+        var sevenDays = 1000 * 60 * 60 * 24 * 7;
+        req.session.cookie.expires = new Date(Date.now() + sevenDays);
+        req.session.cookie.maxAge = sevenDays;
+      } else {
+        req.session.cookie.expires = false;
+      }
+      res.redirect("/");
+    }
+  );
+
 let port = process.env.PORT;
 if (port == null || port == "") {
-  port = 8080;
+    port = 8080;
 }
 
-app.listen(port, (req,res)=>{
+app.listen(port, (req, res) => {
     console.log("Server is running successfullly!")
 })

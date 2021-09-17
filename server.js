@@ -41,13 +41,13 @@ passport.use(
                 "https://loginzzm.herokuapp.com/auth/google/callback",
         },
         async function (accessToken, refreshToken, profile, done) {
-            const oldUser = await UserModel.findOne({
+            const oldUser = await User.findOne({
                 username: profile.emails[0].value,
             });
             if (oldUser) {
                 done(null, oldUser);
             } else {
-                const newUser = await UserModel.create({
+                const newUser = await User.create({
                     username: profile.emails[0].value,
                 });
                 done(null, newUser);
@@ -147,7 +147,7 @@ app.post('/register', (req, res) => {
         res.redirect('/')
     })
 
-    user.register({ email }, password, (err, newUser) => {
+    User.register({username:email}, password, (err, newUser) => {
         if (err) {
           res.send(err);
         } else {
@@ -256,34 +256,6 @@ app.post('/custlogin',
       }
       const email = req.body.inputEmail
       var password = req.body.inputPassword
-  
-  
-      User.find({ email: email }, function (erro, result) {
-          for (var i = 0; i < result.length; i++) {
-  
-  
-              if (result[i] == null) {
-                  res.flash("no users!")
-                  console.log(erro)
-              } else {
-                  var temp = result[i].password
-                  console.log(temp)
-                  const pwd = bcrypt.compareSync(password, temp)
-                  console.log(pwd)
-                  if (pwd) {
-                      console.log("Successfull!")
-                      res.sendFile(__dirname + "/success.html")
-                  } else {
-                      res.flash("password erro!")
-  
-                  }
-  
-              }
-          }
-  
-  
-  
-      })
   
     }
   );

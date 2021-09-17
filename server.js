@@ -81,7 +81,7 @@ app.get('/', AuthMiddleware.isAuth, async (req, res) => {
       } catch (err) {}
 })
 app.get('/payment', (req, res) => {
-    res.sendFile(__dirname + "/payment.html")
+    res.sendFile(path.resolve(__dirname, "./payment.html"));
 })
 app.get('/success', (req, res) => {
     try {
@@ -93,10 +93,10 @@ app.get('/custlogin', (req, res) => {
         res.redirect("/");
         return;
       }
-    res.sendFile(path.resolve(__dirname + "/custlogin.html"));
+    res.sendFile(path.resolve(__dirname + "./custlogin.html"));
 })
 app.get('/register', (req, res) => {
-    res.sendFile(__dirname + "./register.html")
+    res.sendFile(path.resolve(__dirname, "./register.html"));
 })
 
 app.post('/register', (req, res) => {

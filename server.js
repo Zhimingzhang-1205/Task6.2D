@@ -13,7 +13,8 @@ const path = require("path");
 const e = require('express')
 
 
-mongoose.connect("mongodb+srv://admin:zhimingzhang@cluster0.bxxpf.mongodb.net/deakin?retryWrites=true&w=majority", { useNewUrlParser: true })
+mongoose.connect("mongodb+srv://admin:zhimingzhang@cluster0.bxxpf.mongodb.net/deakin?retryWrites=true&w=majority", { useNewUrlParser: true,
+useUnifiedTopology: true, })
 
 const app = express()
 
@@ -66,7 +67,7 @@ app.get(
     }
 );
 app.get('/auth/google/callback',
-    passport.authenticate("google", { failureRedirect: "/custlogin" }),
+    passport.authenticate("google", { failureRedirect: "/custlogin"}),
     function (req, res) {
         res.redirect("/success");
     }

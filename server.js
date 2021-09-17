@@ -1,5 +1,5 @@
 const express = require("express")
-const bodyParse = require("body-parser")
+const bodyParser = require('body-parser')
 const https = require("https")
 const mongoose = require("mongoose")
 const validator = require("validator")
@@ -9,6 +9,7 @@ const AuthMiddleware = require("./models/authMiddleware.js");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const passport = require('passport')
 const session = require('express-session')
+const path = require("path");
 const e = require('express')
 
 
@@ -58,11 +59,10 @@ app.get(
     "/auth/google",
     passport.authenticate("google", { scope: ["profile", "email"] })
 );
-app.get(
-    "/auth/google/callback",
+app.get('/auth/google/callback',
     passport.authenticate("google", { failureRedirect: "/signin" }),
     function (req, res) {
-        res.redirect("/");
+        res.redirect("/success");
     }
 );
 
@@ -81,7 +81,11 @@ app.get('/success', (req, res) => {
     res.send("Cookie cleared");
 })
 app.get('/custlogin', (req, res) => {
-    res.sendFile(__dirname + "/custlogin.html")
+    if (req.isAuthenticated()) {
+        res.redirect("/");
+        return;
+      }
+    res.sendFile(path.resolve(__dirname + "/custlogin.html"));
 })
 app.get('/register', (req, res) => {
     res.sendFile(__dirname + "/register.html")
@@ -239,7 +243,7 @@ app.post('/payment', (req, res) => {
 
 app.post('/custlogin',
     passport.authenticate("local", {
-      failureRedirect: "/register",
+      failureRedirect: "/custlogin",
     }),
     (req, res) => {
       if (req.body.remeberMe) {

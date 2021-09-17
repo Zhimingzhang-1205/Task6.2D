@@ -138,11 +138,12 @@ body {
 
       <a class="btn btn-lg btn-outline-primary btn-block" href="/register">Sign up</a> 
       <br>
-      <a href="@{https://github.com/login/oauth/authorize(client_id=${@environment.getProperty('github.client_id')},redirect_uri=${@environment.getProperty('github.redirect_uri')},scope='user',state='githublogin')}"
-		   class="login-style">
-			<img src="public/img/github.png" style="width: 20px;height: 20px">
-			Github Login
-		</a>
+      <div class="form-group">
+        <a href="/auth/google"><button type="button" class="btn btn-primary btn-block">
+            <img src="/google.png" style="width: 1vw">
+            <span>Sign in with Google</span>
+          </button></a>
+      </div>
       <p class="mt-5 mb-3 text-muted">&copy; 2017-2021</p>
     </form>
     

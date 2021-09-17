@@ -84,10 +84,9 @@ app.get('/payment', (req, res) => {
     res.sendFile(__dirname + "/payment.html")
 })
 app.get('/success', (req, res) => {
-   
-    res.sendFile(__dirname + "/success.html")
-    res.clearCookie("connect.sid");
-    res.send("Cookie cleared");
+    try {
+        res.sendFile(path.resolve(__dirname, "/success.html"));
+      } catch (err) {}
 })
 app.get('/custlogin', (req, res) => {
     if (req.isAuthenticated()) {

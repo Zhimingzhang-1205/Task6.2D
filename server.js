@@ -79,15 +79,15 @@ app.get('/auth/google/callback',
 
 app.get('/', AuthMiddleware.isAuth, async (req, res) => {
     try {
-        res.sendFile(path.resolve(__dirname, "./success.html"));
+        res.sendFile(path.resolve(__dirname, "/success.html"));
     } catch (err) { }
 })
 app.get('/payment', (req, res) => {
-    res.sendFile(path.resolve(__dirname, "./payment.html"));
+    res.sendFile(path.resolve(__dirname, "/payment.html"));
 })
 app.get('/success', (req, res) => {
     try {
-        res.sendFile(path.resolve(__dirname, "./success.html"));
+        res.sendFile(path.resolve(__dirname, "/success.html"));
     } catch (err) { }
 })
 app.get('/custlogin', (req, res) => {
@@ -95,10 +95,10 @@ app.get('/custlogin', (req, res) => {
         res.redirect("/");
         return;
     }
-    res.sendFile(path.resolve(__dirname + "./custlogin.html"));
+    res.sendFile(path.resolve(__dirname + "/custlogin.html"));
 })
 app.get('/register', (req, res) => {
-    res.sendFile(path.resolve(__dirname, "./register.html"));
+    res.sendFile(path.resolve(__dirname, "/register.html"));
 })
 
 app.post('/register', (req, res) => {

@@ -73,7 +73,7 @@ app.get(
 app.get('/auth/google/callback',
     passport.authenticate("google", { failureRedirect: "./custlogin" }),
     function (req, res) {
-        res.redirect("./success");
+        res.redirect("/success");
     }
 );
 

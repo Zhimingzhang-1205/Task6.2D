@@ -259,7 +259,7 @@ app.post('/custlogin',
     }
   );
 
-  app.post("/purchase", function (req, res) {
+  app.post("/payment", function (req, res) {
     const items = [{ id: 1, price: 150000 }];
   
     let total = 0;
@@ -278,7 +278,7 @@ app.post('/custlogin',
       })
       .then(function () {
         console.log("Charge Successful");
-        res.json({ message: "Successfully purchased items" });
+        res.json({ message: "Successfully" });
       })
       .catch(function () {
         console.log("Charge Fail");

@@ -73,7 +73,7 @@ app.get(
 app.get('/auth/google/callback',
     passport.authenticate("google", { failureRedirect: "./custlogin" }),
     function (req, res) {
-        res.redirect("/success");
+        res.redirect('../../success');
     }
 );
 
@@ -87,7 +87,7 @@ app.get('/payment', (req, res) => {
 })
 app.get('/success', (req, res) => {
     try {
-        res.sendFile(path.resolve(__dirname, "/success.html"));
+        res.sendFile(path.resolve(__dirname, "./success.html"));
     } catch (err) { }
 })
 app.get('/custlogin', (req, res) => {

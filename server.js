@@ -79,7 +79,7 @@ app.get('/auth/google/callback',
 
 app.get('/', AuthMiddleware.isAuth, async (req, res) => {
     try {
-        res.sendFile(path.resolve(__dirname, "/success.html"));
+        res.sendFile(path.resolve(__dirname, "./success.html"));
     } catch (err) { }
 })
 app.get('/payment', (req, res) => {

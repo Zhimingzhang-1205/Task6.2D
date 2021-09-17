@@ -13,8 +13,10 @@ const path = require("path");
 const e = require('express')
 
 
-mongoose.connect("mongodb+srv://admin:zhimingzhang@cluster0.bxxpf.mongodb.net/deakin?retryWrites=true&w=majority", { useNewUrlParser: true,
-useUnifiedTopology: true, })
+mongoose.connect("mongodb+srv://admin:zhimingzhang@cluster0.bxxpf.mongodb.net/deakin?retryWrites=true&w=majority", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
 
 const app = express()
 
@@ -65,11 +67,11 @@ app.get(
 app.get(
     "/public/img/google.png",
     function (req, res) {
-    res.sendFile(path.resolve(__dirname, "public/img/google.png"))
+        res.sendFile(path.resolve(__dirname, "public/img/google.png"))
     }
 );
 app.get('/auth/google/callback',
-    passport.authenticate("google", { failureRedirect: "./custlogin"}),
+    passport.authenticate("google", { failureRedirect: "./custlogin" }),
     function (req, res) {
         res.redirect("./success");
     }
@@ -78,7 +80,7 @@ app.get('/auth/google/callback',
 app.get('/', AuthMiddleware.isAuth, async (req, res) => {
     try {
         res.sendFile(path.resolve(__dirname, "./success.html"));
-      } catch (err) {}
+    } catch (err) { }
 })
 app.get('/payment', (req, res) => {
     res.sendFile(path.resolve(__dirname, "./payment.html"));
@@ -86,13 +88,13 @@ app.get('/payment', (req, res) => {
 app.get('/success', (req, res) => {
     try {
         res.sendFile(path.resolve(__dirname, "./success.html"));
-      } catch (err) {}
+    } catch (err) { }
 })
 app.get('/custlogin', (req, res) => {
     if (req.isAuthenticated()) {
         res.redirect("/");
         return;
-      }
+    }
     res.sendFile(path.resolve(__dirname + "./custlogin.html"));
 })
 app.get('/register', (req, res) => {
@@ -146,15 +148,15 @@ app.post('/register', (req, res) => {
         res.redirect('/')
     })
 
-    User.register({username:email}, password, (err, newUser) => {
+    User.register({ username: email }, password, (err, newUser) => {
         if (err) {
-          res.send(err);
+            res.send(err);
         } else {
-          passport.authenticate("local")(req, res, () => {
-            res.redirect("/custlogin");
-          });
+            passport.authenticate("local")(req, res, () => {
+                res.redirect("/custlogin");
+            });
         }
-      });
+    });
 
     const data = {
         members: [{
@@ -192,99 +194,99 @@ app.post('/register', (req, res) => {
 app.post('/', (req, res) => {
     passport.authenticate("local", {
         failureRedirect: "/custlogin",
-      }),
-      (req, res) => {
-        if (req.body.remeberMe) {
-          var sevenDays = 1000 * 60 * 60 * 24 * 7;
-          req.session.cookie.expires = new Date(Date.now() + sevenDays);
-          req.session.cookie.maxAge = sevenDays;
-        } else {
-          req.session.cookie.expires = false;
-        }
-        const email = req.body.inputEmail
-        var password = req.body.inputPassword
-    
-    
-        User.find({ email: email }, function (erro, result) {
-            for (var i = 0; i < result.length; i++) {
-    
-    
-                if (result[i] == null) {
-                    res.flash("no users!")
-                    console.log(erro)
-                } else {
-                    var temp = result[i].password
-                    console.log(temp)
-                    const pwd = bcrypt.compareSync(password, temp)
-                    console.log(pwd)
-                    if (pwd) {
-                        console.log("Successfull!")
-                        res.sendFile(__dirname + "/success.html")
-                    } else {
-                        res.flash("password erro!")
-    
-                    }
-    
-                }
+    }),
+        (req, res) => {
+            if (req.body.remeberMe) {
+                var sevenDays = 1000 * 60 * 60 * 24 * 7;
+                req.session.cookie.expires = new Date(Date.now() + sevenDays);
+                req.session.cookie.maxAge = sevenDays;
+            } else {
+                req.session.cookie.expires = false;
             }
-    
-    
-    
-        })
-    
-      }
+            const email = req.body.inputEmail
+            var password = req.body.inputPassword
+
+
+            User.find({ email: email }, function (erro, result) {
+                for (var i = 0; i < result.length; i++) {
+
+
+                    if (result[i] == null) {
+                        res.flash("no users!")
+                        console.log(erro)
+                    } else {
+                        var temp = result[i].password
+                        console.log(temp)
+                        const pwd = bcrypt.compareSync(password, temp)
+                        console.log(pwd)
+                        if (pwd) {
+                            console.log("Successfull!")
+                            res.sendFile(__dirname + "/success.html")
+                        } else {
+                            res.flash("password erro!")
+
+                        }
+
+                    }
+                }
+
+
+
+            })
+
+        }
 
 
 })
 
 app.post('/payment', (req, res) => {
-  
+
 })
 
 app.post('/custlogin',
     passport.authenticate("local", {
-      failureRedirect: "./custlogin",
+        failureRedirect: "./custlogin",
     }),
     (req, res) => {
-      if (req.body.remeberMe) {
-        var sevenDays = 1000 * 60 * 60 * 24 * 7;
-        req.session.cookie.expires = new Date(Date.now() + sevenDays);
-        req.session.cookie.maxAge = sevenDays;
-      } else {
-        req.session.cookie.expires = false;
-      }
-      const email = req.body.inputEmail
-      var password = req.body.inputPassword
-  
-    }
-  );
+        if (req.body.remeberMe) {
+            var sevenDays = 1000 * 60 * 60 * 24 * 7;
+            req.session.cookie.expires = new Date(Date.now() + sevenDays);
+            req.session.cookie.maxAge = sevenDays;
+        } else {
+            req.session.cookie.expires = false;
+        }
+        const email = req.body.inputEmail
+        var password = req.body.inputPassword
 
-  app.post("/payment", function (req, res) {
+    }
+);
+
+app.post("/payment", function (req, res) {
     const items = [{ id: 1, price: 150000 }];
-  
+
     let total = 0;
     req.body.items.forEach(function (item) {
-      const itemJson = items.find(function (i) {
-        return i.id == item.id;
-      });
-      total = total + itemJson.price * item.quantity;
+        const itemJson = items.find(function (i) {
+            return i.id == item.id;
+        });
+        total = total + itemJson.price * item.quantity;
     });
-  
+
     stripe.charges
-      .create({
-        amount: total,
-        source: req.body.stripeTokenId,
-        currency: "usd",
-      })
-      .then(function () {
-        console.log("Charge Successful");
-        res.json({ message: "Successfully" });
-      })
-      .catch(function () {
-        console.log("Charge Fail");
-        res.status(500).end();
-      });
-  });
+        .create({
+            amount: total,
+            source: req.body.stripeTokenId,
+            currency: "usd",
+        })
+        .then(function () {
+            console.log("Charge Successful");
+            res.json({ message: "Successfully" });
+        })
+        .catch(function () {
+            console.log("Charge Fail");
+            res.status(500).end();
+        });
+});
 
 let port = process.env.PORT;
 if (port == null || port == "") {

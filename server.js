@@ -38,7 +38,7 @@ passport.use(
                 "1057177087299-s3rcjj4mnjt4gv44a4asjfam95ck65qh.apps.googleusercontent.com",
             clientSecret: "CDzotf9gLNGkOqpM41ICoftA",
             callbackURL:
-                "http://localhost:8080/auth/google/callback",
+                "https://loginzzm.herokuapp.com/auth/google/callback",
         },
         async function (accessToken, refreshToken, profile, done) {
             const oldUser = await UserModel.findOne({

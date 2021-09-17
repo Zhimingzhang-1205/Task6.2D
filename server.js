@@ -83,7 +83,7 @@ app.get('/', AuthMiddleware.isAuth, async (req, res) => {
     } catch (err) { }
 })
 app.get('/payment', (req, res) => {
-    res.sendFile(path.resolve(__dirname, "/payment.html"));
+    res.sendFile(path.resolve(__dirname, "./payment.html"));
 })
 app.get('/success', (req, res) => {
     try {

@@ -93,7 +93,7 @@ app.get('/custlogin', (req, res) => {
         res.redirect("/");
         return;
       }
-    res.sendFile(path.resolve(__dirname + "./custlogin.html"));
+    res.sendFile(path.resolve(__dirname + "/custlogin.html"));
 })
 app.get('/register', (req, res) => {
     res.sendFile(__dirname + "./register.html")
@@ -243,7 +243,7 @@ app.post('/payment', (req, res) => {
 
 app.post('/custlogin',
     passport.authenticate("local", {
-      failureRedirect: "/custlogin",
+      failureRedirect: "./custlogin",
     }),
     (req, res) => {
       if (req.body.remeberMe) {
